@@ -90,13 +90,19 @@ export default function AnimatedNav() {
         </Link>
         <div className="flex items-center gap-2">
           <Link
-            href="#features"
+            href="/#features"
             className="rounded-lg border border-dark-border px-4 py-2 text-sm font-medium text-content-secondary transition hover:border-accent hover:text-accent"
           >
             Features
           </Link>
           <Link
-            href="#download"
+            href="/docs"
+            className="rounded-lg border border-dark-border px-4 py-2 text-sm font-medium text-content-secondary transition hover:border-accent hover:text-accent"
+          >
+            Documentation
+          </Link>
+          <Link
+            href="/#download"
             className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-black transition hover:bg-accent-dark"
           >
             Download

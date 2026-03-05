@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import PluginDemoAnimation from './PluginDemoAnimation'
 import {
   motion,
   useMotionValue,
@@ -76,7 +77,7 @@ function FeatureCard({ icon, title, desc, index, reduceMotion }: FeatureCardProp
   )
 }
 
-export default function AnimatedFeatures() {
+export default function AnimatedFeatures({ version = 'N/A' }: { version?: string }) {
   const ref = useRef<HTMLElement>(null)
   const reduceMotion = useReducedMotion()
   const isInView = useInView(ref, { once: true, margin: '-100px' })
@@ -97,6 +98,19 @@ export default function AnimatedFeatures() {
           <p className="text-content-secondary">
             Comprehensive intelligent development assistance — from code generation to deployment
           </p>
+        </motion.div>
+
+        {/* Live demo — above the cards */}
+        <motion.div
+          className="mb-12"
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          transition={{ duration: 0.55, delay: 0.2, ease: 'easeOut' }}
+        >
+          <p className="mb-4 text-center text-sm text-content-secondary">
+            See every module in action — hover to pause
+          </p>
+          <PluginDemoAnimation version={version} />
         </motion.div>
 
         <motion.div

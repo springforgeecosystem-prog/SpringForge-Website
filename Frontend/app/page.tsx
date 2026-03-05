@@ -41,7 +41,7 @@ export default async function Home() {
       <AnimatedNav />
       <AnimatedHero />
       <AnimatedStats />
-      <AnimatedFeatures />
+      <AnimatedFeatures version={plugin.version} />
       <AnimatedDownload plugin={plugin} />
       <AnimatedFooter />
     </main>
