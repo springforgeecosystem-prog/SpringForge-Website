@@ -1,117 +1,131 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface PluginInfo {
-  name: string
-  version: string
-  uploadDate: string
-  hasFile: boolean
+  name: string;
+  version: string;
+  uploadDate: string;
+  hasFile: boolean;
 }
 
 function formatDate(iso: string) {
-  if (!iso || iso === 'N/A') return 'N/A'
-  return new Date(iso).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  if (!iso || iso === "N/A") return "N/A";
+  return new Date(iso).toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function AdminPage() {
-  const [info, setInfo] = useState<PluginInfo | null>(null)
-  const [infoError, setInfoError] = useState(false)
+  const [info, setInfo] = useState<PluginInfo | null>(null);
+  const [infoError, setInfoError] = useState(false);
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [version, setVersion] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [version, setVersion] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
-  const [uploading, setUploading] = useState(false)
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [uploading, setUploading] = useState(false);
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   async function loadInfo() {
     try {
-      const res = await fetch('/api/plugin/info')
-      const data: PluginInfo = await res.json()
-      setInfo(data)
-      setInfoError(false)
+      const res = await fetch("/api/plugin/info");
+      const data: PluginInfo = await res.json();
+      setInfo(data);
+      setInfoError(false);
     } catch {
-      setInfoError(true)
+      setInfoError(true);
     }
   }
 
   useEffect(() => {
-    loadInfo()
-  }, [])
+    loadInfo();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setAlert(null)
+    e.preventDefault();
+    setAlert(null);
 
     if (!username || !password) {
-      setAlert({ type: 'error', message: 'Please enter admin credentials.' })
-      return
+      setAlert({ type: "error", message: "Please enter admin credentials." });
+      return;
     }
     if (!file) {
-      setAlert({ type: 'error', message: 'Please select a .zip file.' })
-      return
+      setAlert({ type: "error", message: "Please select a .zip file." });
+      return;
     }
-    if (!file.name.toLowerCase().endsWith('.zip')) {
-      setAlert({ type: 'error', message: 'Only .zip files are accepted.' })
-      return
+    if (!file.name.toLowerCase().endsWith(".zip")) {
+      setAlert({ type: "error", message: "Only .zip files are accepted." });
+      return;
     }
     if (!version.trim()) {
-      setAlert({ type: 'error', message: 'Please enter a version number.' })
-      return
+      setAlert({ type: "error", message: "Please enter a version number." });
+      return;
     }
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('version', version.trim())
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("version", version.trim());
 
-    setUploading(true)
+    setUploading(true);
     try {
-      // Call backend directly to avoid Next.js 10MB proxy limit
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-      const res = await fetch(`${backendUrl}/api/admin/upload`, {
-        method: 'POST',
+      const res = await fetch(`/api/admin/upload`, {
+        method: "POST",
         headers: { Authorization: `Basic ${btoa(`${username}:${password}`)}` },
         body: formData,
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
 
       if (res.ok && data.success) {
-        setAlert({ type: 'success', message: data.message })
-        setFile(null)
-        setVersion('')
-        const input = document.getElementById('plugin-file') as HTMLInputElement
-        if (input) input.value = ''
-        setTimeout(loadInfo, 500)
+        setAlert({ type: "success", message: data.message });
+        setFile(null);
+        setVersion("");
+        const input = document.getElementById(
+          "plugin-file",
+        ) as HTMLInputElement;
+        if (input) input.value = "";
+        setTimeout(loadInfo, 500);
       } else if (res.status === 401) {
-        setAlert({ type: 'error', message: 'Invalid credentials. Check username and password.' })
+        setAlert({
+          type: "error",
+          message: "Invalid credentials. Check username and password.",
+        });
       } else {
-        setAlert({ type: 'error', message: data.message ?? `Upload failed (HTTP ${res.status}).` })
+        setAlert({
+          type: "error",
+          message: data.message ?? `Upload failed (HTTP ${res.status}).`,
+        });
       }
     } catch {
-      setAlert({ type: 'error', message: 'Network error. Please try again.' })
+      setAlert({ type: "error", message: "Network error. Please try again." });
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-dark-base text-content-primary">
-
       {/* Navbar */}
       <nav className="sticky top-0 z-50 border-b border-dark-border bg-black/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="SpringForge" width={32} height={32} style={{ mixBlendMode: 'screen' }} />
+            <Image
+              src="/logo.png"
+              alt="SpringForge"
+              width={32}
+              height={32}
+              style={{ mixBlendMode: "screen" }}
+            />
             <span className="text-lg font-bold">
               Spring<span className="text-accent">Forge</span>
             </span>
@@ -126,7 +140,6 @@ export default function AdminPage() {
       </nav>
 
       <div className="mx-auto max-w-2xl px-6 py-12">
-
         <div className="mb-8">
           <h1 className="text-2xl font-bold">Admin Panel</h1>
           <p className="mt-1 text-sm text-content-secondary">
@@ -141,29 +154,36 @@ export default function AdminPage() {
           </h2>
 
           {infoError ? (
-            <p className="text-sm text-content-secondary">Could not load plugin info.</p>
+            <p className="text-sm text-content-secondary">
+              Could not load plugin info.
+            </p>
           ) : info === null ? (
             <p className="text-sm text-content-muted">Loading…</p>
           ) : (
             <div className="space-y-2.5">
               {[
-                { label: 'Name', value: info.name },
-                { label: 'Version', value: info.version },
-                { label: 'Upload Date', value: formatDate(info.uploadDate) },
+                { label: "Name", value: info.name },
+                { label: "Version", value: info.version },
+                { label: "Upload Date", value: formatDate(info.uploadDate) },
                 {
-                  label: 'Status',
+                  label: "Status",
                   value: info.hasFile ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
-                      <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Available
+                      <span className="h-1.5 w-1.5 rounded-full bg-accent" />{" "}
+                      Available
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-400" /> No file uploaded
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-400" />{" "}
+                      No file uploaded
                     </span>
                   ),
                 },
               ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between border-b border-dark-border py-2 last:border-0 text-sm">
+                <div
+                  key={row.label}
+                  className="flex items-center justify-between border-b border-dark-border py-2 last:border-0 text-sm"
+                >
                   <span className="text-content-secondary">{row.label}</span>
                   <span className="font-medium">{row.value}</span>
                 </div>
@@ -182,18 +202,17 @@ export default function AdminPage() {
           {alert && (
             <div
               className={`mb-5 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm ${
-                alert.type === 'success'
-                  ? 'border-accent/30 bg-accent/10 text-accent'
-                  : 'border-red-500/30 bg-red-500/10 text-red-400'
+                alert.type === "success"
+                  ? "border-accent/30 bg-accent/10 text-accent"
+                  : "border-red-500/30 bg-red-500/10 text-red-400"
               }`}
             >
-              <span>{alert.type === 'success' ? '✓' : '⚠'}</span>
+              <span>{alert.type === "success" ? "✓" : "⚠"}</span>
               <span>{alert.message}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* Credentials row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -261,12 +280,11 @@ export default function AdminPage() {
               disabled={uploading}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-semibold text-black transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {uploading ? '↻ Uploading…' : '↑ Upload Plugin'}
+              {uploading ? "↻ Uploading…" : "↑ Upload Plugin"}
             </button>
-
           </form>
         </div>
       </div>
     </div>
-  )
+  );
 }
