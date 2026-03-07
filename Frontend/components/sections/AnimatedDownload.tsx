@@ -107,15 +107,8 @@ export default function AnimatedDownload({ plugin }: { plugin: PluginInfo }) {
       }
       if (!res.ok) throw new Error("Download failed");
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "springforge-plugin.zip";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const data = await res.json();
+      window.location.href = data.url;
     } catch {
       alert("Download failed. Please try again.");
     } finally {

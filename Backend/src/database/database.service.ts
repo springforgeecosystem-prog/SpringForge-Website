@@ -58,6 +58,19 @@ export class DatabaseService implements OnModuleInit {
       this.logger.log('Dropped legacy user_feedback table for migration');
     }
 
+    // Migrate: swap file_data BYTEA column for file_path VARCHAR (ALTER TABLE, no drop)
+    const blobColCheck = await this.pool.query(`
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = 'plugin_releases' AND column_name = 'file_data'
+    `);
+    if (blobColCheck.rowCount > 0) {
+      await this.pool.query(`ALTER TABLE plugin_releases ADD COLUMN file_path VARCHAR(500)`);
+      await this.pool.query(`DELETE FROM plugin_releases`); // old rows have no disk file
+      await this.pool.query(`ALTER TABLE plugin_releases DROP COLUMN file_data`);
+      await this.pool.query(`ALTER TABLE plugin_releases ALTER COLUMN file_path SET NOT NULL`);
+      this.logger.log('Migrated plugin_releases: BYTEA → file_path (ALTER TABLE)');
+    }
+
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id            SERIAL PRIMARY KEY,
@@ -73,7 +86,7 @@ export class DatabaseService implements OnModuleInit {
         id            SERIAL PRIMARY KEY,
         version       VARCHAR(50)  NOT NULL,
         original_name VARCHAR(255) NOT NULL,
-        file_data     BYTEA        NOT NULL,
+        file_path     VARCHAR(500) NOT NULL,
         upload_date   TIMESTAMPTZ  DEFAULT NOW(),
         is_current    BOOLEAN      DEFAULT FALSE
       );

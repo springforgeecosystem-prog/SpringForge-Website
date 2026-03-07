@@ -25,14 +25,17 @@ export class PluginService {
     };
   }
 
-  async getFileData(): Promise<Buffer> {
+  async getFileInfo(): Promise<{ filePath: string; originalName: string }> {
     const result = await this.db.query(
-      `SELECT file_data FROM plugin_releases WHERE is_current = true LIMIT 1`,
+      `SELECT file_path, original_name FROM plugin_releases WHERE is_current = true LIMIT 1`,
     );
     if (!result.rows[0]) {
       throw new NotFoundException('No plugin file has been uploaded yet.');
     }
-    return result.rows[0].file_data;
+    return {
+      filePath: result.rows[0].file_path,
+      originalName: result.rows[0].original_name,
+    };
   }
 
   async logDownload(userId: number): Promise<void> {

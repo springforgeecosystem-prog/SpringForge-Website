@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export const config = {
-  matcher: '/api/:path*',
+  // Exclude /api/admin/upload from middleware to avoid 10MB body buffering limit
+  matcher: '/api/((?!admin/upload).*)',
 }
 
 export function middleware(request: NextRequest) {

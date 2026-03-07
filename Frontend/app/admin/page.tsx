@@ -79,7 +79,8 @@ export default function AdminPage() {
 
     setUploading(true);
     try {
-      const res = await fetch(`/api/admin/upload`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+      const res = await fetch(`${API_URL}/api/admin/upload`, {
         method: "POST",
         headers: { Authorization: `Basic ${btoa(`${username}:${password}`)}` },
         body: formData,
